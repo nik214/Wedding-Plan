@@ -1,0 +1,46 @@
+<script>
+let guests = [];
+
+fetch("https://docs.google.com/spreadsheets/d/1x8Ps1XIlHwN9AgIw6PvpV6hH0uPCbrgVpK-bPVyHY7E/export?format=csv")
+  .then(res => res.text())
+  .then(data => {
+    let rows = data.split("\n").slice(1);
+    rows.forEach(row => {
+      let [name, table] = row.split(",");
+      if (name && table) {
+        guests.push({
+          name: name.trim(),
+          table: table.trim()
+        });
+      }
+    });
+
+    guests.sort((a, b) => a.name.localeCompare(b.name));
+    renderList("");
+  });
+
+document.getElementById("search").addEventListener("input", function () {
+  let value = this.value.toLowerCase();
+  highlightNames(value);
+
+  let exact = guests.find(g => g.name.toLowerCase() === value);
+  document.getElementById("result").innerText =
+    exact ? `Your table number is ${exact.table}` : "";
+});
+
+function highlightNames(value) {
+  let html = "";
+  guests.forEach(g => {
+    let isMatch = value && g.name.toLowerCase().includes(value);
+    html += `<div class="guest ${isMatch ? "highlight" : ""}">
+               <span>${g.name}</span>
+               <span>Table ${g.table}</span>
+             </div>`;
+  });
+  document.getElementById("list").innerHTML = html;
+}
+
+function renderList() {
+  highlightNames("");
+}
+</script>
