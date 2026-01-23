@@ -1,0 +1,56 @@
+<script>
+let guests = [];
+
+fetch("https://docs.google.com/spreadsheets/d/1x8Ps1XIlHwN9AgIw6PvpV6hH0uPCbrgVpK-bPVyHY7E/export?format=csv")
+  .then(res => res.text())
+  .then(data => {
+    let rows = data.split("\n").slice(1); // skip header
+    rows.forEach(row => {
+      let [name, table] = row.split(",");
+      if (name && table) {
+        guests.push({
+          name: name.trim(),
+          table: table.trim()
+        });
+      }
+    });
+
+    guests.sort((a, b) => a.name.localeCompare(b.name));
+    renderList(""); // show full list initially
+  })
+  .catch(err => console.error("Error loading CSV:", err));
+
+// Listen for typing in the search box
+document.getElementById("search").addEventListener("input", function () {
+  let value = this.value.toLowerCase();
+
+  // Show exact match table
+  const exact = guests.find(g => g.name.toLowerCase() === value);
+  document.getElementById("result").innerText = exact ? 
+    `✅ Your table number is ${exact.table}` : "";
+
+  renderList(value); // highlight matches
+});
+
+// Render the list, highlighting matching names
+function renderList(searchValue) {
+  const listDiv = document.getElementById("list");
+  let html = "";
+
+  guests.forEach((g, index) => {
+    const isMatch = searchValue && g.name.toLowerCase().includes(searchValue);
+    html += `<div class="guest ${isMatch ? "highlight" : ""}" id="guest-${index}">
+               <span>${g.name}</span>
+               <span>Table ${g.table}</span>
+             </div>`;
+  });
+
+  listDiv.innerHTML = html;
+
+  // Optional: scroll to first highlighted match
+  if (searchValue) {
+    const firstMatch = document.querySelector(".highlight");
+    if (firstMatch) firstMatch.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+</script>
