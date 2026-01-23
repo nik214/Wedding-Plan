@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.guest { padding: 8px; border-bottom: 1px solid #ddd; }
+.highlight { background: #fff3cd; font-weight: bold; }
+</style>
+</head>
+
+<body>
+
+<input id="search" placeholder="Type name">
+
+<div id="result"></div>
+<div id="list"></div>
+
+<script>
+let guests = [
+  { name: "Ahmed Ali", table: 12 },
+  { name: "Sarah Khan", table: 7 },
+  { name: "John Smith", table: 4 }
+];
+
+function highlightNames(value) {
+  let html = "";
+  guests.forEach(g => {
+    let match = value && g.name.toLowerCase().includes(value);
+    html += `<div class="guest ${match ? "highlight" : ""}">
+              ${g.name} – Table ${g.table}
+            </div>`;
+  });
+  document.getElementById("list").innerHTML = html;
+}
+
+highlightNames("");
+
+document.getElementById("search").addEventListener("input", e => {
+  highlightNames(e.target.value.toLowerCase());
+});
+</script>
+
+</body>
+</html>
