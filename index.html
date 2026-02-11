@@ -78,4 +78,54 @@ input {
 <script>
 let guests = [];
 
-fetch("https://docs.google.com/spreadsheets/d/
+fetch("https://docs.google.com/spreadsheets/d/1x8Ps1XIlHwN9AgIw6PvpV6hH0uPCbrgVpK-bPVyHY7E/export?format=csv")
+  .then(res => res.text())
+  .then(data => {
+    let rows = data.trim().split("\n").slice(1);
+
+    rows.forEach(row => {
+      let [name, table] = row.split(",");
+      if (name && table) {
+        guests.push({
+          name: name.trim(),
+          table: table.trim()
+        });
+      }
+    });
+
+    guests.sort((a, b) => a.name.localeCompare(b.name));
+    renderList();
+  });
+
+function renderList() {
+  let html = "";
+
+  guests.forEach(g => {
+    html += `
+      <div class="guest" data-name="${g.name.toLowerCase()}">
+        <span>${g.name}</span>
+        <span>Table ${g.table}</span>
+      </div>
+    `;
+  });
+
+  document.getElementById("list").innerHTML = html;
+}
+
+document.getElementById("search").addEventListener("input", function () {
+  let value = this.value.toLowerCase().trim();
+  let rows = document.querySelectorAll(".guest");
+
+  rows.forEach(row => {
+    let name = row.dataset.name;
+    row.style.display = name.includes(value) ? "flex" : "none";
+  });
+
+  let match = guests.find(g => g.name.toLowerCase() === value);
+  document.getElementById("result").innerText =
+    match ? `Your table number is ${match.table}` : "";
+});
+</script>
+
+</body>
+</html>
