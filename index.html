@@ -22,7 +22,6 @@ body {
 h1 {
   text-align: center;
   font-weight: normal;
-  margin-bottom: 10px;
 }
 
 p {
@@ -82,49 +81,58 @@ let guests = [];
 fetch("https://docs.google.com/spreadsheets/d/1x8Ps1XIlHwN9AgIw6PvpV6hH0uPCbrgVpK-bPVyHY7E/export?format=csv")
   .then(res => res.text())
   .then(data => {
-    let rows = data.split("\n").slice(1);
+    let rows = data.trim().split("\n").slice(1);
+
     rows.forEach(row => {
-      let [name, table] = row.split(",");
-      if (name && table) {
+      let cols = row.split(",");
+      if (cols.length >= 2) {
         guests.push({
-          name: name.trim(),
-          table: table.trim()
+          name: cols[0].trim(),
+          table: cols[1].trim()
         });
       }
     });
 
     guests.sort((a, b) => a.name.localeCompare(b.name));
-    renderList();
+    renderList(guests);
   });
 
 document.getElementById("search").addEventListener("input", function () {
   let value = this.value.toLowerCase().trim();
 
+  // FULL LIST when empty
   if (value === "") {
     renderList(guests);
     document.getElementById("result").innerText = "";
     return;
   }
 
-  let filteredGuests = guests.filter(g =>
+  // FILTER while typing
+  let filtered = guests.filter(g =>
     g.name.toLowerCase().includes(value)
   );
 
-  renderList(filteredGuests);
+  renderList(filtered);
 
-  let match = guests.find(g => g.name.toLowerCase() === value);
+  // EXACT match → show table
+  let exact = guests.find(g =>
+    g.name.toLowerCase() === value
+  );
+
   document.getElementById("result").innerText =
-    match ? `Your table number is ${match.table}` : "";
+    exact ? `Your table number is ${exact.table}` : "";
 });
 
-function renderList(list = guests) {
+function renderList(list) {
   let html = "";
 
   list.forEach(g => {
-    html += `<div class="guest">
-               <span>${g.name}</span>
-               <span>Table ${g.table}</span>
-             </div>`;
+    html += `
+      <div class="guest">
+        <span>${g.name}</span>
+        <span>Table ${g.table}</span>
+      </div>
+    `;
   });
 
   document.getElementById("list").innerHTML = html;
