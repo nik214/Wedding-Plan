@@ -77,6 +77,7 @@ input {
 
 <script>
 let guests = [];
+let originalOrder = [];
 
 fetch("https://docs.google.com/spreadsheets/d/1x8Ps1XIlHwN9AgIw6PvpV6hH0uPCbrgVpK-bPVyHY7E/export?format=csv")
   .then(res => res.text())
@@ -93,16 +94,50 @@ fetch("https://docs.google.com/spreadsheets/d/1x8Ps1XIlHwN9AgIw6PvpV6hH0uPCbrgVp
       }
     });
 
+    // alphabetical base order
     guests.sort((a, b) => a.name.localeCompare(b.name));
-    renderList();
+    originalOrder = [...guests];
+
+    renderList(guests);
   });
 
-function renderList() {
+document.getElementById("search").addEventListener("input", function () {
+  let value = this.value.toLowerCase().trim();
+
+  if (value === "") {
+    renderList(originalOrder);
+    document.getElementById("result").innerText = "";
+    return;
+  }
+
+  let startsWith = [];
+  let others = [];
+
+  originalOrder.forEach(g => {
+    if (g.name.toLowerCase().startsWith(value)) {
+      startsWith.push(g);
+    } else {
+      others.push(g);
+    }
+  });
+
+  let sortedList = [...startsWith, ...others];
+  renderList(sortedList);
+
+  let exact = originalOrder.find(g =>
+    g.name.toLowerCase() === value
+  );
+
+  document.getElementById("result").innerText =
+    exact ? `Your table number is ${exact.table}` : "";
+});
+
+function renderList(list) {
   let html = "";
 
-  guests.forEach(g => {
+  list.forEach(g => {
     html += `
-      <div class="guest" data-name="${g.name.toLowerCase()}">
+      <div class="guest">
         <span>${g.name}</span>
         <span>Table ${g.table}</span>
       </div>
@@ -111,20 +146,6 @@ function renderList() {
 
   document.getElementById("list").innerHTML = html;
 }
-
-document.getElementById("search").addEventListener("input", function () {
-  let value = this.value.toLowerCase().trim();
-  let rows = document.querySelectorAll(".guest");
-
-  rows.forEach(row => {
-    let name = row.dataset.name;
-    row.style.display = name.includes(value) ? "flex" : "none";
-  });
-
-  let match = guests.find(g => g.name.toLowerCase() === value);
-  document.getElementById("result").innerText =
-    match ? `Your table number is ${match.table}` : "";
-});
 </script>
 
 </body>
