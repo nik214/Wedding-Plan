@@ -98,20 +98,35 @@ fetch("https://docs.google.com/spreadsheets/d/1x8Ps1XIlHwN9AgIw6PvpV6hH0uPCbrgVp
   });
 
 document.getElementById("search").addEventListener("input", function () {
-  let value = this.value.toLowerCase();
+  let value = this.value.toLowerCase().trim();
+
+  if (value === "") {
+    renderList(guests);
+    document.getElementById("result").innerText = "";
+    return;
+  }
+
+  let filteredGuests = guests.filter(g =>
+    g.name.toLowerCase().includes(value)
+  );
+
+  renderList(filteredGuests);
+
   let match = guests.find(g => g.name.toLowerCase() === value);
   document.getElementById("result").innerText =
     match ? `Your table number is ${match.table}` : "";
 });
 
-function renderList() {
+function renderList(list = guests) {
   let html = "";
-  guests.forEach(g => {
+
+  list.forEach(g => {
     html += `<div class="guest">
                <span>${g.name}</span>
                <span>Table ${g.table}</span>
              </div>`;
   });
+
   document.getElementById("list").innerHTML = html;
 }
 </script>
