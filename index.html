@@ -66,7 +66,7 @@ input {
 <h1>Welcome</h1>
 <p>Scan & find your table</p>
 
-<input id="search" placeholder="Enter your full name">
+<input id="search" placeholder="Enter your name">
 
 <div class="result" id="result"></div>
 
@@ -77,7 +77,7 @@ input {
 
 <script>
 let guests = [];
-let originalOrder = [];
+let baseList = [];
 
 fetch("https://docs.google.com/spreadsheets/d/1x8Ps1XIlHwN9AgIw6PvpV6hH0uPCbrgVpK-bPVyHY7E/export?format=csv")
   .then(res => res.text())
@@ -88,44 +88,43 @@ fetch("https://docs.google.com/spreadsheets/d/1x8Ps1XIlHwN9AgIw6PvpV6hH0uPCbrgVp
       let [name, table] = row.split(",");
       if (name && table) {
         guests.push({
-          name: name.trim(),
-          table: table.trim()
+          name: name.replace(/"/g, "").trim(),
+          table: table.replace(/"/g, "").trim()
         });
       }
     });
 
-    // alphabetical base order
+    // base alphabetical order
     guests.sort((a, b) => a.name.localeCompare(b.name));
-    originalOrder = [...guests];
+    baseList = [...guests];
 
-    renderList(guests);
+    renderList(baseList);
   });
 
 document.getElementById("search").addEventListener("input", function () {
   let value = this.value.toLowerCase().trim();
 
-  if (value === "") {
-    renderList(originalOrder);
+  if (!value) {
+    renderList(baseList);
     document.getElementById("result").innerText = "";
     return;
   }
 
-  let startsWith = [];
+  let matches = [];
   let others = [];
 
-  originalOrder.forEach(g => {
-    if (g.name.toLowerCase().startsWith(value)) {
-      startsWith.push(g);
+  baseList.forEach(g => {
+    if (g.name.toLowerCase().includes(value)) {
+      matches.push(g);
     } else {
       others.push(g);
     }
   });
 
-  let sortedList = [...startsWith, ...others];
-  renderList(sortedList);
+  renderList([...matches, ...others]);
 
-  let exact = originalOrder.find(g =>
-    g.name.toLowerCase() === value
+  let exact = baseList.find(
+    g => g.name.toLowerCase() === value
   );
 
   document.getElementById("result").innerText =
